@@ -1,0 +1,5 @@
+{
+    "Model": "phi3",
+    "Prompt": "Resumí el texto en pocas líneas, de forma clara y concisa. Solo basate en el texto dado:",
+    "Stream": false
+}
