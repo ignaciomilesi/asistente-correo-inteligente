@@ -1,0 +1,5 @@
+{
+    "Model": "glm-4.6:cloud",
+    "Prompt": "Resumí brevemente el siguiente correo, destacando el punto principal o la acción mencionada. Usá una o dos frases clara.\n\nCorreo:",
+    "Stream": false
+}

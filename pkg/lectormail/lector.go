@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 	"unicode/utf16"
@@ -13,13 +14,15 @@ import (
 )
 
 type MailPropiedades struct {
-	Asunto   string
-	De       string
-	Para     string
-	CC       string
-	Cuerpo   string
-	Cabecera string
-	Fecha    time.Time
+	Asunto         string
+	De             string
+	Para           string
+	CC             string
+	UltimoMail     string // Cuerpo del ultimo mail
+	CadenaDeMail   string // Cuerpo de toda la cadena de mail
+	CuerpoCompleto string // Ultimo mail + cadena
+	Cabecera       string
+	Fecha          time.Time
 }
 
 func ExtraerPropiedades(mailPath string) (mailParseado MailPropiedades) {
@@ -41,7 +44,7 @@ func ExtraerPropiedades(mailPath string) (mailParseado MailPropiedades) {
 		"__substg1.0_0C1A001F": &mailParseado.De,
 		"__substg1.0_0E04001F": &mailParseado.Para,
 		"__substg1.0_0E03001F": &mailParseado.CC,
-		"__substg1.0_1000001F": &mailParseado.Cuerpo,
+		"__substg1.0_1000001F": &mailParseado.CuerpoCompleto,
 		"__substg1.0_007D001F": &mailParseado.Cabecera,
 	}
 
@@ -54,10 +57,24 @@ func ExtraerPropiedades(mailPath string) (mailParseado MailPropiedades) {
 			*target = utf16ToString(buf)
 		}
 	}
+
+	// limpio el texto del cuerpo
+	mailParseado.CuerpoCompleto = limpiarTextoEmail(mailParseado.CuerpoCompleto)
+
 	// extraigo la fecha de la cabecera
 	mailParseado.Fecha, err = extraerFecha(mailParseado.Cabecera)
 	if err != nil {
 		fmt.Println(err)
+	}
+
+	UltimoMail, Cadena, ok := strings.Cut(mailParseado.CuerpoCompleto, "De: ")
+
+	if ok {
+		mailParseado.UltimoMail = UltimoMail
+		mailParseado.CadenaDeMail = Cadena
+
+	} else {
+		mailParseado.UltimoMail = mailParseado.CuerpoCompleto
 	}
 
 	return mailParseado
@@ -102,4 +119,24 @@ func extraerFecha(cabecera string) (time.Time, error) {
 	}
 
 	return time.Time{}, fmt.Errorf("no se pudo parsear la fecha: %v", err)
+}
+
+func limpiarTextoEmail(texto string) string {
+
+	// Normaliza los saltos de línea a '\n' (por si vienen como '\r\n')
+
+	texto = strings.ReplaceAll(texto, "\r", "\n")
+
+	// Reemplaza saltos de línea múltiples (2 o más) por uno solo
+	reSaltos := regexp.MustCompile(`\n{2,}`)
+	texto = reSaltos.ReplaceAllString(texto, "\n")
+
+	// Reemplaza espacios múltiples por uno solo
+	reEspacios := regexp.MustCompile(` +`)
+	texto = reEspacios.ReplaceAllString(texto, " ")
+
+	// Elimina espacios o saltos al principio y final
+	texto = strings.TrimSpace(texto)
+
+	return texto
 }
