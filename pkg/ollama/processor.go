@@ -21,13 +21,15 @@ type Processor struct {
 }
 
 func (p *Processor) Iniciar() error {
-	if err := p.cargarConfig(); err != nil {
+	if err := p.cargarPromptsTemplate(); err != nil {
 		return fmt.Errorf("error al cargar config, %v", err)
 	}
 
-	if err := p.cargarKey(); err != nil {
-		return fmt.Errorf("error al cargar la key de acceso, %v", err)
+	if os.Getenv("ACCESS_KEY_OLLAMA") == "" {
+		log.Fatal("Falta la variable \"ACCESS_KEY_OLLAMA\" en el archivo .env")
 	}
+
+	p.key = os.Getenv("ACCESS_KEY_OLLAMA")
 
 	fmt.Println("Processor iniciado")
 	return nil
@@ -64,10 +66,9 @@ func (p Processor) Resumir(text string) (string, error) {
 	return result["response"].(string), nil
 }
 
-func (p *Processor) cargarConfig() error {
+func (p *Processor) cargarPromptsTemplate() error {
 
-	// Abrir archivo
-	archivo, err := os.ReadFile("config.json")
+	archivo, err := os.ReadFile("prompt_template.json")
 	if err != nil {
 		return fmt.Errorf("error al leer el archivo, %v", err)
 	}
@@ -77,19 +78,6 @@ func (p *Processor) cargarConfig() error {
 	if err != nil {
 		return fmt.Errorf("error al parsear el json, %v", err)
 	}
-
-	return nil
-}
-
-func (p *Processor) cargarKey() error {
-	data, _ := os.ReadFile("key.json")
-
-	var result map[string]string
-	if err := json.Unmarshal(data, &result); err != nil {
-		return fmt.Errorf("error al parsear el json, %v", err)
-	}
-
-	p.key = result["key"]
 
 	return nil
 }

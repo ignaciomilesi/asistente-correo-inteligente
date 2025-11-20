@@ -1,3 +1,4 @@
 mailTest/
 key.json
-db/
+.env
+mail/
