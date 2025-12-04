@@ -12,14 +12,14 @@ type dbInterface interface {
 	ConsultaListaConMapeo(interface{}, string, ...any) error
 }
 
-type Service struct {
+type service struct {
 	db dbInterface
 }
 
-func New(nuevoGestorBaseDatos dbInterface) *Service {
-	return &Service{db: nuevoGestorBaseDatos}
+func New(nuevoGestorBaseDatos dbInterface) *service {
+	return &service{db: nuevoGestorBaseDatos}
 }
 
-func (s *Service) Cerrar() {
+func (s *service) Cerrar() {
 	s.db.Salir()
 }

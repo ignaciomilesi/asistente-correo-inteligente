@@ -8,12 +8,12 @@ import (
 	g "github.com/AllenDang/giu"
 )
 
-type serviceInterface interface {
+type serviceInterfaceListaPendiente interface {
 	ObtenerListaPendientes() ([]service.Pendiente, error)
 }
 
 type VentanaListaPendiente struct {
-	Service       serviceInterface
+	Service       serviceInterfaceListaPendiente
 	ventanaActiva bool
 	pendientes    []service.Pendiente
 }

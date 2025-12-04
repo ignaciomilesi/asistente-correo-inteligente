@@ -13,15 +13,15 @@ type Pendiente struct {
 }
 
 type PendienteCompleto struct {
-	ID               int            `db:"id"`
-	Titulo           string         `db:"Titulo"`
-	Descripcion      string         `db:"Descripcion"`
-	Estado           string         `db:"Estado"`
-	Finalizada       bool           `db:"Finalizada"`
-	Fecha_iniciada   sql.NullTime   `db:"Fecha_iniciada"`
-	Fecha_finalizada sql.NullTime   `db:"Fecha_finalizada"`
-	Cierre           sql.NullString `db:"Cierre"`
-	Asignado         string         `db:"asignado"`
+	ID               int          `db:"id"`
+	Titulo           string       `db:"Titulo"`
+	Descripcion      string       `db:"Descripcion"`
+	Estado           string       `db:"Estado"`
+	Finalizada       bool         `db:"Finalizada"`
+	Fecha_iniciada   sql.NullTime `db:"Fecha_iniciada"`
+	Fecha_finalizada sql.NullTime `db:"Fecha_finalizada"`
+	Cierre           string       `db:"Cierre"`
+	Asignado         int32        `db:"asignado"`
 }
 
 type Avance struct {

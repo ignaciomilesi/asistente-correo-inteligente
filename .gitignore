@@ -2,3 +2,4 @@ mailTest/
 key.json
 .env
 mail/
+linkSAP.go

@@ -1,7 +1,7 @@
 package service
 
 // devuelve la lista de todos los pendientes no finalizado, con su ultimo avance
-func (s Service) ObtenerListaPendientes() (pendientes []Pendiente, err error) {
+func (s service) ObtenerListaPendientes() (pendientes []Pendiente, err error) {
 
 	query := `SELECT * FROM Lista_de_Pendientes`
 
@@ -12,12 +12,10 @@ func (s Service) ObtenerListaPendientes() (pendientes []Pendiente, err error) {
 }
 
 // devuelve el detalle del pendiente
-func (s Service) ObtenerDetallePendiente(idPendiente int) (pendiente PendienteCompleto, err error) {
+func (s service) ObtenerDetallePendiente(idPendiente int) (pendiente PendienteCompleto, err error) {
 
-	query := `SELECT p.*, u.nombre AS asignado
+	query := `SELECT *
 				FROM pendientes AS p
-				LEFT JOIN usuarios AS u
-				ON p.asignado = u.id
 				WHERE p.id=?;`
 
 	err = s.db.ConsultaConMapeo(&pendiente, query, idPendiente)
@@ -26,7 +24,7 @@ func (s Service) ObtenerDetallePendiente(idPendiente int) (pendiente PendienteCo
 }
 
 // devuelve la lista de avances del pendiente, ordenados decendientes
-func (s Service) ObtenerListaAvance(idPendiente int) (avances []Avance, err error) {
+func (s service) ObtenerListaAvance(idPendiente int) (avances []Avance, err error) {
 
 	query := `SELECT * FROM avances
 	WHERE Pendientes_id = ?
@@ -38,7 +36,7 @@ func (s Service) ObtenerListaAvance(idPendiente int) (avances []Avance, err erro
 }
 
 // devuelve la lista de adjuntos del pendiente, ordenados decendientes
-func (s Service) ObtenerListaAdjunto(idPendiente int) (adjunto []Adjunto, err error) {
+func (s service) ObtenerListaAdjunto(idPendiente int) (adjunto []Adjunto, err error) {
 
 	query := `SELECT * FROM adjuntos
 	WHERE Pendientes_id = ?;`
@@ -46,4 +44,29 @@ func (s Service) ObtenerListaAdjunto(idPendiente int) (adjunto []Adjunto, err er
 	err = s.db.ConsultaListaConMapeo(&adjunto, query, idPendiente)
 
 	return adjunto, err
+}
+
+// devuelve la lista de solo los nombres de los usuarios, ordenados por ID
+func (s service) ObtenerListaUsuarios() (lista []string, err error) {
+
+	query := `SELECT nombre FROM usuarios 
+				ORDER BY id ASC;`
+
+	rows, err := s.db.ConsultaSimple(query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var nombre string
+		if err := rows.Scan(&nombre); err != nil {
+			return nil, err
+		}
+		lista = append(lista, nombre)
+	}
+
+	return lista, err
 }
