@@ -1,4 +1,4 @@
-package ventanas
+package widgets
 
 import (
 	"database/sql"
@@ -39,21 +39,22 @@ func TestEsquemaDetallePendiente(t *testing.T) {
 		MockPedienteCompleto: service.PendienteCompleto{
 			ID:     42,
 			Titulo: "Titulo de Prueba",
-			Descripcion: `Descripción de prueba, Descripción de prueba, descripción de prueba, Descripción de pruebaDescripción de prueba, 
-Descripción de prueba, Descripción de prueba, Descripción de prueba
+			Descripcion: `prueba, Descripción de pruebaDescripción de prueba, Descripción de prueba, Descripción de prueba, descripción de prueba, Descripción de prueba, Descripción de prueba, descripción de prueba, Descripción de prueba, Descripción de prueba, descripción de prueba,
+	   Descripción de prueba, Descripción de prueba, Descripción de prueba
 
-::[sap]1000004080::
+	   !sap:1000004080
+	   !s:1000004080| - texto a la derecha
 
-Descripción de prueba, Descripción de prueba,
+	   Descripción de prueba, Descripción de prueba,
+	   !-:Bullet 1: prueba 1
+	   !l:www.google.com|etiqueta en link
+	   !bullet:Bullet 2, prueba 1
+	   !link:www.google.com
 
-::[-]Bullet 1, prueba 1::
-::[bullet]Bullet 2, prueba 1::
-
-::[link]www.google.com::
-
-Descripción de prueba, Descripción de prueba, descripción de prueba, 
-Descripción de pruebaDescripción de prueba, Descripción de prueba, Descripción de prueba, Descripción de prueba
-`,
+	   !malComando:www.google.com
+	   Descripción de prueba, Descripción de prueba, descripción de prueba,
+	   Descripción de pruebaDescripción de prueba, Descripción de prueba, Descripción de prueba, Descripción de prueba
+	   `,
 			Estado:     "Estado de Prueba",
 			Finalizada: false,
 			Fecha_iniciada: sql.NullTime{
@@ -104,19 +105,19 @@ Descripción de pruebaDescripción de prueba, Descripción de prueba, Descripci�
 		},
 	}
 
-	vlp := VentanaDetallePendiente{
-		Service: msd,
-	}
+	vlp := NuevoDetallePendiente(msd, 4)
 
 	t.Run("Prueba de ventana", func(t *testing.T) {
 
-		gui := g.NewMasterWindow("Buscar expediente", 1000, 600, g.MasterWindowFlagsTransparent)
-		gui.SetPos(100, 100)
+		gui := g.NewMasterWindow("Buscar expediente", 1000, 600, g.MasterWindowFlagsMaximized)
 
-		vlp.Actualizar()
+		gui.Run(func() {
 
-		gui.Run(vlp.Esquema)
-
+			swmb := g.SingleWindowWithMenuBar()
+			swmb.Layout(
+				vlp,
+			)
+		})
 	})
 
 }

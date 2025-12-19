@@ -2,6 +2,7 @@ package ventanas
 
 import (
 	"fmt"
+	"go-ollama/gui/ventanas/widgets"
 	"go-ollama/service"
 	"strconv"
 
@@ -10,64 +11,110 @@ import (
 
 type serviceInterfaceListaPendiente interface {
 	ObtenerListaPendientes() ([]service.Pendiente, error)
+	ObtenerDetallePendiente(int) (service.PendienteCompleto, error)
+	ObtenerListaAdjunto(int) ([]service.Adjunto, error)
+	ObtenerListaAvance(int) ([]service.Avance, error)
+	ObtenerListaUsuarios() ([]string, error)
 }
 
 type VentanaListaPendiente struct {
-	Service       serviceInterfaceListaPendiente
+	service       serviceInterfaceListaPendiente
 	ventanaActiva bool
 	pendientes    []service.Pendiente
+	detalle       g.Widget
+	anchoSplit    float32
 }
 
-func (v *VentanaListaPendiente) EsVentanaActiva() bool {
+func (self *VentanaListaPendiente) EsVentanaActiva() bool {
 	return true
 }
 
-func (v *VentanaListaPendiente) Actualizar() {
+func NuevaVentanaListaPendiente(serviceBaseDatos serviceInterfaceListaPendiente) *VentanaListaPendiente {
 
-	var err error
-	v.pendientes, err = v.Service.ObtenerListaPendientes()
-
+	p, err := serviceBaseDatos.ObtenerListaPendientes()
 	if err != nil {
 		fmt.Printf("No se pudo actualizar la lista de pendientes.\n%v\n", err)
 	}
+
+	return &VentanaListaPendiente{
+		service:    serviceBaseDatos,
+		pendientes: p,
+	}
 }
 
-func (v *VentanaListaPendiente) Esquema() {
+func (self *VentanaListaPendiente) Esquema() {
 
 	g.SingleWindowWithMenuBar().Layout(
-		/*
-			g.MenuBar().Layout(
-				g.MenuItem("Configuración").OnClick(vp.MostrarConfig),
+
+		g.Row(
+			g.Child().Size(g.Auto-self.anchoSplit, g.Auto).Flags(g.WindowFlagsHorizontalScrollbar).Layout(
+				g.Row(
+					g.Style().
+						SetFontSize(32).To(
+						g.Label("Lista de Pendientes"),
+					),
+
+					g.Condition(self.anchoSplit > 0,
+						g.Dummy(1, 1),
+						g.Align(g.AlignRight).To(
+							g.Button("Cargar nuevo pendiente"),
+						),
+					),
+				),
+				g.Dummy(3, 3),
+
+				g.Table().Columns(
+					g.TableColumn("ID").Flags(g.TableColumnFlagsNoResize|g.TableColumnFlagsWidthFixed).InnerWidthOrWeight(20),
+					g.TableColumn("Titulo").Flags(g.TableColumnFlagsNoResize|g.TableColumnFlagsWidthFixed).InnerWidthOrWeight(300),
+					g.TableColumn("Estado").Flags(g.TableColumnFlagsNoResize),
+					g.TableColumn("Ultimo Avance").Flags(g.TableColumnFlagsNoResize|g.TableColumnFlagsWidthFixed).InnerWidthOrWeight(100),
+				).Rows(
+					self.obtenerFilas()...,
+				).Flags(g.TableFlagsRowBg|g.TableFlagsBorders),
 			),
-		*/
-		g.Align(g.AlignRight).To(
-			g.Button("Cargar nuevo pendiente"),
+
+			g.Child().Size(600, g.Auto).Layout(
+				g.Align(g.AlignRight).To(
+					g.Button("Cerrar Detalle").OnClick(func() {
+						self.anchoSplit = 0
+					}),
+				),
+				self.detalle,
+			),
 		),
-
-		g.Dummy(5, 5),
-
-		g.Table().Columns(
-			g.TableColumn("ID").Flags(g.TableColumnFlagsNoResize|g.TableColumnFlagsWidthFixed).InnerWidthOrWeight(20),
-			//g.TableColumn("-").Flags(g.TableColumnFlagsNoResize|g.TableColumnFlagsWidthFixed).InnerWidthOrWeight(30),
-			g.TableColumn("Titulo").Flags(g.TableColumnFlagsNoResize|g.TableColumnFlagsWidthFixed).InnerWidthOrWeight(300),
-			g.TableColumn("Estado").Flags(g.TableColumnFlagsNoResize),
-			g.TableColumn("Ultimo Avance").Flags(g.TableColumnFlagsNoResize|g.TableColumnFlagsWidthFixed).InnerWidthOrWeight(100),
-		).Rows(
-			v.obtenerFilas()...,
-		).Flags(g.TableFlagsRowBg|g.TableFlagsBorders),
 	)
 
 }
 
-func (v VentanaListaPendiente) obtenerFilas() (filas []*g.TableRowWidget) {
+func (self *VentanaListaPendiente) DropFileCallback(ventanaPrincipal g.MasterWindow, pathFiles []string) {
 
-	for _, pendiente := range v.pendientes {
+	if len(pathFiles) > 1 {
+		g.Msgbox("Error", "Arrastre un solo archivo")
+		return
+	}
+
+	posicionVentanaX, _ := ventanaPrincipal.GetPos()
+	anchoVentana, _ := ventanaPrincipal.GetSize()
+	posMouseX := g.GetMousePos().X
+
+	if (anchoVentana - (posMouseX - posicionVentanaX)) < int(self.anchoSplit) {
+		fmt.Println("Cargar nuevo avance")
+	} else {
+		fmt.Println("Cargar nuevo pendiente")
+	}
+
+}
+
+func (self *VentanaListaPendiente) obtenerFilas() (filas []*g.TableRowWidget) {
+
+	for _, pendiente := range self.pendientes {
 
 		tableRow := g.TableRow(
 			// ID
 			g.Selectable(strconv.Itoa(pendiente.ID)).Flags(g.SelectableFlagsSpanAllColumns).OnDClick(
 				func() {
-					fmt.Println("Ver detalle")
+					self.detalle = widgets.NuevoDetallePendiente(self.service, pendiente.ID)
+					self.anchoSplit = 600
 				}),
 			g.ContextMenu().Layout(g.Label(pendiente.Descripcion)),
 

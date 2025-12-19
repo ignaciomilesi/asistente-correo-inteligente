@@ -12,11 +12,15 @@ import (
 type ventanaInterface interface {
 	EsVentanaActiva() bool
 	Esquema()
-	Actualizar()
+	DropFileCallback(g.MasterWindow, []string)
 }
 
 type serviceInterface interface {
 	ObtenerListaPendientes() ([]service.Pendiente, error)
+	ObtenerDetallePendiente(int) (service.PendienteCompleto, error)
+	ObtenerListaAdjunto(int) ([]service.Adjunto, error)
+	ObtenerListaAvance(int) ([]service.Avance, error)
+	ObtenerListaUsuarios() ([]string, error)
 	Cerrar()
 }
 
@@ -34,9 +38,7 @@ func New(ser serviceInterface) *controlerGUI {
 
 func (cg *controlerGUI) Ejecutar() {
 
-	cg.ventanaListaPendiente = &ventanas.VentanaListaPendiente{
-		Service: cg.service,
-	}
+	cg.ventanaListaPendiente = ventanas.NuevaVentanaListaPendiente(cg.service)
 
 	gui := g.NewMasterWindow("Buscar expediente", 1000, 600, g.MasterWindowFlagsTransparent)
 	gui.SetPos(100, 100)
@@ -48,49 +50,16 @@ func (cg *controlerGUI) Ejecutar() {
 		return true
 	})
 
-	cg.actualizarVentanas()
+	gui.SetDropCallback(func(pathFilesDrop []string) {
 
-	gui.Run(cg.mostrarVentanas)
+		if cg.ventanaListaPendiente.EsVentanaActiva() {
+			cg.ventanaListaPendiente.DropFileCallback(*gui, pathFilesDrop)
+		}
+	})
+
+	gui.Run(func() {
+		if cg.ventanaListaPendiente.EsVentanaActiva() {
+			cg.ventanaListaPendiente.Esquema()
+		}
+	})
 }
-
-func (cg controlerGUI) actualizarVentanas() {
-	if cg.ventanaListaPendiente.EsVentanaActiva() {
-		cg.ventanaListaPendiente.Actualizar()
-	}
-}
-
-func (cg controlerGUI) mostrarVentanas() {
-
-	if cg.ventanaListaPendiente.EsVentanaActiva() {
-		cg.ventanaListaPendiente.Esquema()
-	}
-}
-
-/*
-func (cg *ControlerGUI) setVentanaPrincipal() {
-
-	cg.vp.Activa = true
-	cg.vp.Visible = true
-
-	cg.vp.Control = &cg.control
-
-	cg.vp.MostrarConfig = func() {
-		cg.vp.Activa = false
-		cg.vc.Visible = true
-	}
-
-}
-
-func (cg *ControlerGUI) setVentanaConfig() {
-	cg.vc.Activa = true
-	cg.vc.Visible = false
-
-	cg.vc.Control = &cg.control
-
-	cg.vc.CerrarVentana = func() {
-
-		cg.vp.Activa = true
-		cg.vc.Visible = false
-	}
-
-}*/

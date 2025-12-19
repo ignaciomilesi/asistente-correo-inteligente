@@ -22,26 +22,6 @@ func main() {
 
 	ser := service.New(gdb)
 
-	lp, _ := ser.ObtenerListaPendientes()
-	fmt.Printf("%+v\n", lp)
-
-	fmt.Println("\n------------------DetallePendiente--------------------------\n")
-
-	d, _ := ser.ObtenerDetallePendiente(4)
-	fmt.Printf("%+v\n", d)
-
-	fmt.Println("\n-----------------ListaAvance---------------------------\n")
-
-	a, _ := ser.ObtenerListaAvance(4)
-	fmt.Printf("%+v\n", a)
-
-	fmt.Println("\n----------------ListaAdjunto----------------------------\n")
-
-	ad, _ := ser.ObtenerListaAdjunto(4)
-	fmt.Printf("%+v\n", ad)
-
-	return
-
 	fmt.Println("Iniciando GUI...")
 	v := gui.New(ser)
 
