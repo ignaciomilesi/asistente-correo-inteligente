@@ -61,21 +61,23 @@ func TestEsquemaDetallePendiente(t *testing.T) {
 				Time: time.Date(2025, time.Month(11), 15, 0, 0, 0, 0, time.UTC),
 			},
 			Fecha_finalizada: sql.NullTime{},
-			Cierre:           "Cierre de Prueba, Cierre de Prueba, Cierre de Prueba",
-			Asignado:         5,
+			Cierre: sql.NullString{
+				String: "Cierre de Prueba, Cierre de Prueba, Cierre de Prueba"},
+			Asignado: sql.NullInt32{
+				Int32: 5},
 		},
 		MockListaAvance: []service.Avance{
 			service.Avance{
 				Id:             1,
 				Fecha_Avance:   sql.NullTime{Time: time.Date(2025, time.Month(11), 20, 0, 0, 0, 0, time.UTC)},
 				Descripcion:    "Avance de prueba 1",
-				Ubicacion_mail: "D:\\milesi\\Archivos\\01 - Personal\\Proyectos\\GO-ollama\\mailTest\\prueba.msg",
+				Ubicacion_mail: sql.NullString{String: "D:\\milesi\\Archivos\\01 - Personal\\Proyectos\\GO-ollama\\mailTest\\prueba.msg"},
 			},
 			service.Avance{
 				Id:             8,
 				Fecha_Avance:   sql.NullTime{Time: time.Date(2025, time.Month(11), 15, 0, 0, 0, 0, time.UTC)},
 				Descripcion:    "Registro de la activad, Avance de prueba 1, ",
-				Ubicacion_mail: "hipervinculo de error",
+				Ubicacion_mail: sql.NullString{String: "hipervinculo de error"},
 			},
 			service.Avance{
 				Id:           10,
@@ -87,12 +89,12 @@ func TestEsquemaDetallePendiente(t *testing.T) {
 			service.Adjunto{
 				Id:                2,
 				Descripcion:       "Esquemas",
-				Ubicacion_archivo: "D:\\milesi\\Archivos\\01 - Personal\\Proyectos\\GO-ollama\\mailTest\\foto.jpeg",
+				Ubicacion_archivo: sql.NullString{String: "D:\\milesi\\Archivos\\01 - Personal\\Proyectos\\GO-ollama\\mailTest\\foto.jpeg"},
 			},
 			service.Adjunto{
 				Id:                7,
 				Descripcion:       "lista en PDF",
-				Ubicacion_archivo: "D:\\milesi\\Archivos\\01 - Personal\\Proyectos\\GO-ollama\\mailTest\\informe.pdf",
+				Ubicacion_archivo: sql.NullString{String: "D:\\milesi\\Archivos\\01 - Personal\\Proyectos\\GO-ollama\\mailTest\\informe.pdf"},
 			},
 		},
 		MockListaUsuarios: []string{

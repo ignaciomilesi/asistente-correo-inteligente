@@ -16,7 +16,7 @@ type ventanaInterface interface {
 }
 
 type serviceInterface interface {
-	ObtenerListaPendientes() ([]service.Pendiente, error)
+	ObtenerListaPendientes() ([]service.PendienteResumen, error)
 	ObtenerDetallePendiente(int) (service.PendienteCompleto, error)
 	ObtenerListaAdjunto(int) ([]service.Adjunto, error)
 	ObtenerListaAvance(int) ([]service.Avance, error)

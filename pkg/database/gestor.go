@@ -181,3 +181,35 @@ func (g GestorDb) MostrarTablas() {
 		fmt.Println("-", tableName)
 	}
 }
+
+// Genera un nuevo registro, devuelve el id del registro generado
+func (g *GestorDb) NuevoRegistro(query string, args ...any) (int64, error) {
+
+	result, err := g.db.Exec(query, args...)
+	if err != nil {
+		return 0, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
+// actualiza un registro, devuelve la cantidad de registros modificados
+func (g *GestorDb) ActualizarRegistro(query string, args ...any) (int64, error) {
+
+	result, err := g.db.Exec(query, args...)
+	if err != nil {
+		return 0, err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	return rows, nil
+}

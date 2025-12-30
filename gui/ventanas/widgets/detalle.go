@@ -106,7 +106,7 @@ func NuevoDetallePendiente(serviceBaseDatos serviceInterfaceDetallePendiente, id
 	}()
 
 	v.descripcionInput = NuevoInputMultiLineConEdicion(&v.pendiente.Descripcion, 275)
-	v.cierreInput = NuevoInputMultiLineConEdicion(&v.pendiente.Cierre, 100)
+	v.cierreInput = NuevoInputMultiLineConEdicion(&v.pendiente.Cierre.String, 100)
 
 	return &v
 }
@@ -149,8 +149,8 @@ func (v *detallePendiente) Build() {
 	g.Row(
 		g.Label("Asignado: "),
 
-		g.Condition(len(v.listaUsuarios) > int(v.pendiente.Asignado),
-			g.Combo("", v.listaUsuarios[v.pendiente.Asignado], v.listaUsuarios, &v.pendiente.Asignado).Size(300),
+		g.Condition(v.pendiente.Asignado.Valid && len(v.listaUsuarios) > int(v.pendiente.Asignado.Int32),
+			g.Combo("", v.listaUsuarios[v.pendiente.Asignado.Int32], v.listaUsuarios, &v.pendiente.Asignado.Int32).Size(300),
 			g.Dummy(5, 5),
 		),
 	).Build()
@@ -204,7 +204,11 @@ func (v detallePendiente) tablaDeAvances() (filas []*g.TableRowWidget) {
 			g.Selectable(avance.Fecha_Avance.Time.Format("02-01-2006")).
 				OnDClick(func() {
 
-					_, err := os.Stat(avance.Ubicacion_mail)
+					if avance.Ubicacion_mail.String == "" {
+						return
+					}
+
+					_, err := os.Stat(avance.Ubicacion_mail.String)
 					if err != nil {
 
 						g.Msgbox("Error", err.Error())
@@ -212,7 +216,7 @@ func (v detallePendiente) tablaDeAvances() (filas []*g.TableRowWidget) {
 						fmt.Println(err)
 						return
 					}
-					exec.Command("rundll32", "url.dll,FileProtocolHandler", avance.Ubicacion_mail).Start()
+					exec.Command("rundll32", "url.dll,FileProtocolHandler", avance.Ubicacion_mail.String).Start()
 
 				}).Flags(g.SelectableFlagsSpanAllColumns),
 
@@ -235,7 +239,11 @@ func (v detallePendiente) tablaDeAdjuntos() (filas []*g.TableRowWidget) {
 			g.Selectable(adjunto.Descripcion).
 				OnDClick(func() {
 
-					_, err := os.Stat(adjunto.Ubicacion_archivo)
+					if adjunto.Ubicacion_archivo.String == "" {
+						return
+					}
+
+					_, err := os.Stat(adjunto.Ubicacion_archivo.String)
 					if err != nil {
 
 						g.Msgbox("Error", err.Error())
@@ -243,7 +251,7 @@ func (v detallePendiente) tablaDeAdjuntos() (filas []*g.TableRowWidget) {
 						fmt.Println(err)
 						return
 					}
-					exec.Command("rundll32", "url.dll,FileProtocolHandler", adjunto.Ubicacion_archivo).Start()
+					exec.Command("rundll32", "url.dll,FileProtocolHandler", adjunto.Ubicacion_archivo.String).Start()
 
 				}).Flags(g.SelectableFlagsSpanAllColumns),
 		).MinHeight(30)

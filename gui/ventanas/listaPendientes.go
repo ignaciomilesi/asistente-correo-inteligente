@@ -10,7 +10,7 @@ import (
 )
 
 type serviceInterfaceListaPendiente interface {
-	ObtenerListaPendientes() ([]service.Pendiente, error)
+	ObtenerListaPendientes() ([]service.PendienteResumen, error)
 	ObtenerDetallePendiente(int) (service.PendienteCompleto, error)
 	ObtenerListaAdjunto(int) ([]service.Adjunto, error)
 	ObtenerListaAvance(int) ([]service.Avance, error)
@@ -20,12 +20,12 @@ type serviceInterfaceListaPendiente interface {
 type VentanaListaPendiente struct {
 	service       serviceInterfaceListaPendiente
 	ventanaActiva bool
-	pendientes    []service.Pendiente
+	pendientes    []service.PendienteResumen
 	detalle       g.Widget
 	anchoSplit    float32
 }
 
-func (self *VentanaListaPendiente) EsVentanaActiva() bool {
+func (v *VentanaListaPendiente) EsVentanaActiva() bool {
 	return true
 }
 
@@ -42,19 +42,19 @@ func NuevaVentanaListaPendiente(serviceBaseDatos serviceInterfaceListaPendiente)
 	}
 }
 
-func (self *VentanaListaPendiente) Esquema() {
+func (v *VentanaListaPendiente) Esquema() {
 
 	g.SingleWindowWithMenuBar().Layout(
 
 		g.Row(
-			g.Child().Size(g.Auto-self.anchoSplit, g.Auto).Flags(g.WindowFlagsHorizontalScrollbar).Layout(
+			g.Child().Size(g.Auto-v.anchoSplit, g.Auto).Flags(g.WindowFlagsHorizontalScrollbar).Layout(
 				g.Row(
 					g.Style().
 						SetFontSize(32).To(
 						g.Label("Lista de Pendientes"),
 					),
 
-					g.Condition(self.anchoSplit > 0,
+					g.Condition(v.anchoSplit > 0,
 						g.Dummy(1, 1),
 						g.Align(g.AlignRight).To(
 							g.Button("Cargar nuevo pendiente"),
@@ -69,24 +69,24 @@ func (self *VentanaListaPendiente) Esquema() {
 					g.TableColumn("Estado").Flags(g.TableColumnFlagsNoResize),
 					g.TableColumn("Ultimo Avance").Flags(g.TableColumnFlagsNoResize|g.TableColumnFlagsWidthFixed).InnerWidthOrWeight(100),
 				).Rows(
-					self.obtenerFilas()...,
+					v.obtenerFilas()...,
 				).Flags(g.TableFlagsRowBg|g.TableFlagsBorders),
 			),
 
 			g.Child().Size(600, g.Auto).Layout(
 				g.Align(g.AlignRight).To(
 					g.Button("Cerrar Detalle").OnClick(func() {
-						self.anchoSplit = 0
+						v.anchoSplit = 0
 					}),
 				),
-				self.detalle,
+				v.detalle,
 			),
 		),
 	)
 
 }
 
-func (self *VentanaListaPendiente) DropFileCallback(ventanaPrincipal g.MasterWindow, pathFiles []string) {
+func (v *VentanaListaPendiente) DropFileCallback(ventanaPrincipal g.MasterWindow, pathFiles []string) {
 
 	if len(pathFiles) > 1 {
 		g.Msgbox("Error", "Arrastre un solo archivo")
@@ -97,7 +97,7 @@ func (self *VentanaListaPendiente) DropFileCallback(ventanaPrincipal g.MasterWin
 	anchoVentana, _ := ventanaPrincipal.GetSize()
 	posMouseX := g.GetMousePos().X
 
-	if (anchoVentana - (posMouseX - posicionVentanaX)) < int(self.anchoSplit) {
+	if (anchoVentana - (posMouseX - posicionVentanaX)) < int(v.anchoSplit) {
 		fmt.Println("Cargar nuevo avance")
 	} else {
 		fmt.Println("Cargar nuevo pendiente")
@@ -105,16 +105,16 @@ func (self *VentanaListaPendiente) DropFileCallback(ventanaPrincipal g.MasterWin
 
 }
 
-func (self *VentanaListaPendiente) obtenerFilas() (filas []*g.TableRowWidget) {
+func (v *VentanaListaPendiente) obtenerFilas() (filas []*g.TableRowWidget) {
 
-	for _, pendiente := range self.pendientes {
+	for _, pendiente := range v.pendientes {
 
 		tableRow := g.TableRow(
 			// ID
 			g.Selectable(strconv.Itoa(pendiente.ID)).Flags(g.SelectableFlagsSpanAllColumns).OnDClick(
 				func() {
-					self.detalle = widgets.NuevoDetallePendiente(self.service, pendiente.ID)
-					self.anchoSplit = 600
+					v.detalle = widgets.NuevoDetallePendiente(v.service, pendiente.ID)
+					v.anchoSplit = 600
 				}),
 			g.ContextMenu().Layout(g.Label(pendiente.Descripcion)),
 
